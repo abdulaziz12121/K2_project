@@ -1,12 +1,15 @@
-#include<stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
+#include "Simulator.h"
 
-int main(){
-//loader();
-//fetcher();
+
+int main(int argc, char *argv[]){
 char mode;
+if (argc < 2) {
+        printf("Usage: %s <filename>\n", argv[0]);
+        return 1;
+    }	
+	
+loader(argv[1]);
+//decoder();
 
 printf("\nSelect one of the following mode\nR - Run in continuous mode\nS - Run step-by-step\nSelect mode: ");
 
@@ -16,9 +19,12 @@ if(mode == 'S'){
 run_sbs();}
 else if(mode == 'R'){
 run_con();}
-
+else{printf("Error:invalid input");}
 
 return 0;}
+/*
+
+
 
 
 //run in continious mode
@@ -32,7 +38,6 @@ printf("\nExecution (Register RO output):");
 //ALU
 
 while(PC<ins_num){
-
 
 
 
@@ -114,7 +119,7 @@ return decimal;}
 
 
 //-----------------------
-/*void imm_bin(char *byte,char *imm){
+void imm_bin(char *byte,char *imm){
   strncpy(imm, byte + 5, 3);
   imm[3] = '\0'; }*/
 
@@ -125,24 +130,16 @@ return decimal;}
 
 
 //---------------------------------
-char* Ins_memory(int j,int c,int D0,int D1,int Sr,int S){
-int address=0;
-
-return address;}
+//char* Ins_memory(int j,int c,int D0,int D1,int Sr,int S){int address=0;return address;}
 
 
 //---------------------------------
 //int ALU(int A,int B,int op){return 0;}
 
 //---------------------------------
-int MUX(int Sr){
-
-
-return 0;}
+//int MUX(int Sr){return 0;}
 
 //---------------------------------
-int fetch(char *Memory,int PC){
-
-return Memory[PC];}
+//int fetch(char *Memory,int PC){return Memory[PC];}
 
 
