@@ -34,7 +34,7 @@ FILE *fi ;
 fi=fopen(filename,"r");
 
 FILE *fo ;
-fo=fopen("fibonacci.bin","wb");
+fo=fopen("binary.bin","wb");
 
 
 char Str[16];
