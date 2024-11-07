@@ -17,8 +17,8 @@ char D0[10];
 char s_reg[10];
 char s[10];
 int counter=0;
-int ALU_r =0;
-int RA = 0, RB = 0, R0 = 0, PC = 0;  
+int ALU_r=0 ;
+int RA=0, RB=0 , R0=0 , PC = 0;  
 bool carry;
 //-------------loader 
 void loader(const char *filename) {
@@ -72,18 +72,16 @@ if (PC < 0 || PC >= ins_num) {
     D0[pc] = lines[pc][3];
     s_reg[pc] = lines[pc][4];
     s[pc] = lines[pc][5];
-
-    printf("J[%d]: %c\n", pc, J[pc]);
-    printf("C[%d]: %c\n", pc, C[pc]);
     printf("D1[%d]: %c\n", pc, D1[pc]);
     printf("D0[%d]: %c\n", pc, D0[pc]);
     printf("s_reg[%d]: %c\n", pc, s_reg[pc]);
     printf("s[%d]: %c\n", pc, s[pc]);
-}
+
+    }
 //----------------------------- program counter
 int Procount(int PC, int carry){
 
-if(C[PC]=='1' && carry || J[PC]=='1'){
+if(  (C[PC]=='1' && carry )|| J[PC]=='1'){
 strncpy(imm, lines[PC] + 5, 3);
     imm[3]='\0';
 int imm_dec = bin_dec(imm);
@@ -104,49 +102,61 @@ return PC+1;}
 
 //--------------ALU
 int ALU(int A, int B, char sign) {
-    carry=0;
+    carry=0;int Alu_out;
 	if (sign == '0') {  // Addition
-       ALU_r = A+B;
-       if(ALU_r > 7){
+       Alu_out = A+B;
+       if(Alu_out > 15){
        carry =1;
-       ALU_r &=7;}
+       Alu_out= Alu_out & 15;}
 
-	return ALU_r;
+	return Alu_out;
+
     } else if (sign == '1') {  // Subtraction
-          ALU_r = A-B;
-	if(ALU_r<0){
+          Alu_out = A-B;
+	if(Alu_out<0){
 	carry=1;
-	ALU_r = (ALU_r + 8) & 7;
+	Alu_out = Alu_out & 15;
 	}
-	  return ALU_r;
+	  return Alu_out;
     } else { 
         printf("Invalid operation\n");
-        return 0;
-    }
+        return Alu_out;}
 }
 
 
 // 2-to-1 MUX function
 int mux(int input0, int input1, int select) {
-    int temp;
 	if (select == 0) {
      	//temp = bin_dec(imm);   // If select is 0, output input0
-    	temp = input0 ; 
-	} else {
-	temp=input1 ; 	
-        //temp=ALU_r;  // If select is 1, output input1
-    }
-
-if(D1[PC]=='0' && D0[PC]=='0'){
-		RA=temp;
-		
-	}else if(D1[PC]=='1' && D0[PC]=='0'){
-	RB=temp;
-	
-	}else if(D1[PC]=='0' && D0[PC]=='1'){
-	R0=RA;}
-return temp;
+    	return input0 ; 
+	} else if(select ==1){
+	return input1 ; 	}
+	else {printf("invalid select");return 0;}
+        //temp=ALU_r;  // If select is 1, output input1}
 }
+	
+//--------------Decoder D0D1
+void D10(char D1,char D0,int Mux_r){
+if(D1=='0' && D0=='0'){
+                RA=Mux_r;
+                 
+        }else if(D1=='0' && D0=='1'){
+         RB=Mux_r ; 
+
+        }else if(D1=='1' && D0=='0'){
+        R0=RA;   }
+else if(D1 == '1' && D0 == '1'){
+        printf("Error: Invalid combination of D1 and D0\n");  }
+        printf("D1[%d]: %c, D0[%d]: %c\n", PC, D1, PC, D0);
+
+
+}
+
+
+
+
+
+
 
 //-------------Machine to assembly
 char*  Mc_asm(char *byte){
@@ -181,13 +191,21 @@ if (strncmp(byte, "00000000",8) == 0) {
 
     }else if( strncmp(byte,"10110",5) ==0 ){
         sprintf(asm_line, "J=%d",imm_dec);
-    }
+    }else {
+    printf("Warning: Unrecognized instruction %s\n", byte);}
+
 
 
 return asm_line;}
 //------------------------fetch
 char* fetch(char Memory[][10], int PC) {
-    return Memory[PC];  
+    
+	
+if (PC >= 0 && PC < ins_num) {
+    return Memory[PC];
+} else {
+    printf("Fetch Error: PC out of bounds.\n");
+    exit(1);}  
 }
 
 
@@ -207,7 +225,7 @@ void run_sbs() {
 void run_con() {
     printf("\nStarting Simulator in continuous mode...");
     printf("\nExecution (Register RO output):\n");
- 	int mux_result=0; int imm_dec ;
+ 	int mux_result=0; int imm_dec ;int alu_result=0;
     while (PC < ins_num) {
         if (PC < 0 || PC >= ins_num) {
             printf("Error: PC out of bounds.\n");
@@ -222,14 +240,25 @@ void run_con() {
         imm[3] = '\0';
          imm_dec = bin_dec(imm);
 
-	mux_result = mux(ALU_r,imm_dec,s_reg[PC]-'0');
-	ALU_r= ALU(RA,RB,s[PC]);
+	
+	alu_result= ALU(RA,RB,s[PC]);
+               mux_result=mux(alu_result,imm_dec,s_reg[PC]-'0');
 
+       	D10(D1[PC], D0[PC],mux_result);
+
+        printf("\nimm=%d  ", imm_dec);
 
 	// if (strncmp(Mc_asm(ins), "RO=RA", 5) == 0) {
           //  printf("R0=%d\n", R0);}
+	  
 
-        printf("R0=%d\n", R0);
+        printf("Mux=%d  ", mux_result);
+	printf("ALU Result= %d  ",alu_result);
+	printf("RA=%d  ", RA);
+	printf("RB=%d  ", RB);
+        printf("R0=%d  \n", R0);
+	
+	
 	sleep(1);
         PC = Procount(PC, carry);
     }

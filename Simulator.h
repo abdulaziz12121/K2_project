@@ -27,6 +27,7 @@ char* fetch(char Memory[][10], int PC);
 //int fetch(char Memory[][10], int PC);
 int ALU(int A, int B, char sign);
 int mux(int input0, int input1, int select);
+void D10(char D1,char D0,int Mux_r);
 
 #endif
 
