@@ -28,7 +28,7 @@ int Cont[6];
 //int main(char *argv[]){
 int main(int argc, char *argv[]){
 const char *filename=argv[1];
-unsigned char byte = convert_to_byte();
+//unsigned char bytei = convert_to_byte();
 
 FILE *fi ; 
 fi=fopen(filename,"r");
@@ -36,9 +36,8 @@ fi=fopen(filename,"r");
 FILE *fo ;
 fo=fopen("binary.bin","wb");
 
-
+int line_num = 1; 
 char Str[16];
-char dest[2],R1[2],R2[2],op[2];
 //int imm;
 
 if (fi == NULL) {
@@ -53,7 +52,7 @@ if (fo == NULL) {
 printf("\nUsing the file: %s",filename);
 
 //scanf(fi, "%2s %1s %2s %d %f", );
-int i=0,line_num=1;
+
 int imm;char imm_binary[4];
 
 while (fgets(Str, 16, fi)) {
@@ -120,76 +119,11 @@ fclose(fi);
 return 0;}
 
 	
-	//if(sscanf(Str, "%2s = %2s %2s %2s", dest, R1, op, R2) == 4){		
-		
-	/*	
-	storebit(Reg_Mc(dest),0,2);
-	storebit(Reg_Mc(R1),2,2);
-        storebit(Op_Mc(op),4,2);
-        storebit(Reg_Mc(R2),6,2);
-	
-	//ref=0;
-	printf("\nLine %d : %s -> Machine Code: ",line_num,Str);
-	for(int j=0;j<8;j++){
-	printf("%d",Mc[j]);}
-
-	byte = convert_to_byte();
-        fwrite(&byte, sizeof(byte), 1, fo);
-        //fputc('\n',fo);
-	
-	reset_Mc();
-	
-	
-	}else if(sscanf(Str,"%2s = %2s",dest,R1)==2){
-	 printf("\nLine %d : %s -> Machine Code: ",line_num,Str);
-        storebit(Reg_Mc(R1),0,2);
-        storebit(Reg_Mc(dest),0,2);
-
-
-	 
-	 
-	 
-	 //storing
-	//
-	 
-	for(int j=0;j<8;j++){
-        printf("%d",Mc[j]);}
-
-
-	byte = convert_to_byte();
-        fwrite(&byte, sizeof(byte), 1, fo);
-        //fputc('\n',fo);
-
-        reset_Mc();
-	
-	
-	}else if(sscanf(Str,"%2s = %d",dest,&imm)==2){
-	storebit(Reg_Mc(dest),0,2);
-	storebit(imm,2,6);
-	printf("\nLine %d : %s -> Machine Code: ",line_num,Str);
-        
-	for(int j=0;j<8;j++){
-        printf("%d",Mc[j]);}
-
-	byte = convert_to_byte();
-        fwrite(&byte, sizeof(byte), 1, fo);
-        //fputc('\n',fo);
-
-        
-
-        reset_Mc();
-	
-	
-	}
-		
-	
-	printf("\n");line_num++; i++;}
-*/
 
 
 //---------------convert decimal to binary
 void conv_to_binary(int dec,char*imm_binary){
-int temp;
+//int temp;
 for(int i=2;i>=0;i--){
 imm_binary[2-i]= ( (dec>>i)&1  ) ? '1' :'0';}
 imm_binary[3] = '\0';

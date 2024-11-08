@@ -262,10 +262,10 @@ if (enRA) {
     R0=RA;
 //printf("R0=%d  \n", R0);
 }
-/
+
 	
         printf("imm=%d  ", imm_dec);
-i
+
 
         printf("Mux=%d  ", mux_result);
 	printf("ALU Result= %d  ",alu_result);
