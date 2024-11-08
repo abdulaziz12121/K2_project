@@ -4,7 +4,7 @@ CFLAGS = -Wall
 ASSEMBLER = assembler
 SIMULATOR = simulator
 
-FILENAME ?= fibonacci.asm
+#FILENAME ?= fibonacci.asm
 
 # Compile assembler from K2_assembler.c
 $(ASSEMBLER): K2_assembler.c
@@ -21,8 +21,8 @@ assemble: $(ASSEMBLER)
 
 # Run the simulator with the specified binary file
 simulate: $(SIMULATOR)
-	@echo "Running simulator with binary file: $(FILENAME)"
-	./$(SIMULATOR) $(FILENAME)
+	@echo "Running simulator with binary file: binary.bin"
+	./$(SIMULATOR) binary.bin
 
 # Compile both assembler and simulator
 all: $(ASSEMBLER) $(SIMULATOR)

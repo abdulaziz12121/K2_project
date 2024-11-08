@@ -6,20 +6,17 @@
 #include "Simulator.h"
 
 int N; 
-//char lines[9][10];
 char lines[Max_lines][10];  
 int ins_num = 0;
 char imm[4];
-char J[10];
-char C[10];
-char D1[10];
-char D0[10];
-char s_reg[10];
-char s[10];
+
 int counter=0;
-int ALU_r=0 ;
-int RA=0, RB=0 , R0=0 , PC = 0;  
+
+int PC = 0;  
 bool carry;
+flags decoded[Max_lines];
+
+
 //-------------loader 
 void loader(const char *filename) {
 FILE *file = fopen(filename, "r"); 
@@ -29,7 +26,6 @@ FILE *file = fopen(filename, "r");
 
 
       
-    //int index = 0;
 
  while (fgets(lines[ins_num], sizeof(lines[0]), file) != NULL) {
         
@@ -46,7 +42,6 @@ FILE *file = fopen(filename, "r");
             break;
         }
     }
-// N=index;
  
 
     fclose(file);
@@ -60,37 +55,45 @@ FILE *file = fopen(filename, "r");
 }
 //----------------Decoder
 void decoder(int pc){
-if (PC < 0 || PC >= ins_num) {
+if (pc < 0 || pc >= ins_num) {
     printf("Error: PC out of bounds.\n");
-    exit(1);
-}
+    exit(1);}
   
+
+    decoded[pc].J = lines[pc][0];
+    decoded[pc].C = lines[pc][1];
+    decoded[pc].D1 = lines[pc][2];
+    decoded[pc].D0 = lines[pc][3];
+    decoded[pc].s_reg = lines[pc][4];
+    decoded[pc].s = lines[pc][5];	
        
-	J[pc] = lines[pc][0];
-    C[pc] = lines[pc][1];
-    D1[pc] = lines[pc][2];
-    D0[pc] = lines[pc][3];
-    s_reg[pc] = lines[pc][4];
-    s[pc] = lines[pc][5];
-    printf("D1[%d]: %c\n", pc, D1[pc]);
-    printf("D0[%d]: %c\n", pc, D0[pc]);
-    printf("s_reg[%d]: %c\n", pc, s_reg[pc]);
-    printf("s[%d]: %c\n", pc, s[pc]);
+
+
+	printf("Decoded line %d: J=%c, C=%c, D1=%c, D0=%c, s_reg=%c, s=%c\n",
+           pc, decoded[pc].J, decoded[pc].C,
+           decoded[pc].D1, decoded[pc].D0,
+           decoded[pc].s_reg, decoded[pc].s);
 
     }
 //----------------------------- program counter
-int Procount(int PC, int carry){
+int Procount(int PC, bool carry){
 
-if(  (C[PC]=='1' && carry )|| J[PC]=='1'){
-strncpy(imm, lines[PC] + 5, 3);
-    imm[3]='\0';
+
+
+if ((     ( (decoded[PC].C == '1') ? true : false)  && carry )||( decoded[PC].J=='1')  ){
+
+strncpy(imm, lines[PC] + 5,3 );
+imm[3]='\0';
 int imm_dec = bin_dec(imm);
+
  if (imm_dec < 0 || imm_dec >= ins_num) {
             printf("Error: Invalid jump address %d\n", imm_dec);
-            exit(1);
-        }
+            exit(1);}
+
+
 return imm_dec;
 }
+
 
 return PC+1;}
 
@@ -101,12 +104,12 @@ return PC+1;}
 
 
 //--------------ALU
-int ALU(int A, int B, char sign) {
-    carry=0;int Alu_out;
+int ALU(int A, int B, char sign,bool *carry) {
+    *carry=false;int Alu_out=0;
 	if (sign == '0') {  // Addition
        Alu_out = A+B;
        if(Alu_out > 15){
-       carry =1;
+       *carry =true;
        Alu_out= Alu_out & 15;}
 
 	return Alu_out;
@@ -114,10 +117,11 @@ int ALU(int A, int B, char sign) {
     } else if (sign == '1') {  // Subtraction
           Alu_out = A-B;
 	if(Alu_out<0){
-	carry=1;
-	Alu_out = Alu_out & 15;
+	*carry=true;
+	Alu_out = (Alu_out + 16) & 15;
 	}
 	  return Alu_out;
+
     } else { 
         printf("Invalid operation\n");
         return Alu_out;}
@@ -127,30 +131,29 @@ int ALU(int A, int B, char sign) {
 // 2-to-1 MUX function
 int mux(int input0, int input1, int select) {
 	if (select == 0) {
-     	//temp = bin_dec(imm);   // If select is 0, output input0
     	return input0 ; 
 	} else if(select ==1){
 	return input1 ; 	}
 	else {printf("invalid select");return 0;}
-        //temp=ALU_r;  // If select is 1, output input1}
 }
 	
 //--------------Decoder D0D1
-void D10(char D1,char D0,int Mux_r){
+void D10(char D1,char D0,bool *enRA,bool *enRB,bool *enR0){
+*enRA=false;*enRB=false;*enR0=false;
+	
 if(D1=='0' && D0=='0'){
-                RA=Mux_r;
-                 
+                //RA=Mux_r;
+                 *enRA=true;
         }else if(D1=='0' && D0=='1'){
-         RB=Mux_r ; 
-
+         //RB=Mux_r ; 
+	*enRB=true;
         }else if(D1=='1' && D0=='0'){
-        R0=RA;   }
-else if(D1 == '1' && D0 == '1'){
-        printf("Error: Invalid combination of D1 and D0\n");  }
-        printf("D1[%d]: %c, D0[%d]: %c\n", PC, D1, PC, D0);
+        //R0=RA;  
+       *enR0=true;	}
+else if(D1 == '1' && D0 == '1'){}
+//printf("Error: Invalid combination of D1 and D0 (D1=1 D0=1)\n");  
+        printf("D1: %c, D0: %c\n",D1, D0);}
 
-
-}
 
 
 
@@ -197,6 +200,8 @@ if (strncmp(byte, "00000000",8) == 0) {
 
 
 return asm_line;}
+
+
 //------------------------fetch
 char* fetch(char Memory[][10], int PC) {
     
@@ -225,15 +230,18 @@ void run_sbs() {
 void run_con() {
     printf("\nStarting Simulator in continuous mode...");
     printf("\nExecution (Register RO output):\n");
- 	int mux_result=0; int imm_dec ;int alu_result=0;
-    while (PC < ins_num) {
+ 	int mux_result=0; int imm_dec ;int alu_result=0;bool carry = false ;
+int R0=0,RA=0,RB=0;  
+     bool enRA = false, enRB = false, enR0 = false;
+bool carry_temp=false;
+	while (PC < ins_num) {
         if (PC < 0 || PC >= ins_num) {
             printf("Error: PC out of bounds.\n");
             exit(1);
         }
 	    
 	   char *ins = fetch(lines,PC);
-	printf("instruction %d: %s\n",PC,ins);
+	printf("\ninstruction %d: %s\n",PC,ins);
 	
 	decoder(PC);
 	 strncpy(imm, lines[PC] + 5, 3);
@@ -241,26 +249,35 @@ void run_con() {
          imm_dec = bin_dec(imm);
 
 	
-	alu_result= ALU(RA,RB,s[PC]);
-               mux_result=mux(alu_result,imm_dec,s_reg[PC]-'0');
-
-       	D10(D1[PC], D0[PC],mux_result);
-
-        printf("\nimm=%d  ", imm_dec);
-
-	// if (strncmp(Mc_asm(ins), "RO=RA", 5) == 0) {
-          //  printf("R0=%d\n", R0);}
-	  
+	alu_result= ALU(RA,RB,decoded[PC].s,&carry);
+        mux_result=mux(alu_result,imm_dec,decoded[PC].s_reg -'0');
+	
+D10(decoded[PC].D1, decoded[PC].D0, &enRA, &enRB, &enR0);
+	
+if (enRA) {
+    RA=mux_result;
+}if (enRB) {
+    RB=mux_result;
+}if (enR0) {
+    R0=RA;
+//printf("R0=%d  \n", R0);
+}
+/
+	
+        printf("imm=%d  ", imm_dec);
+i
 
         printf("Mux=%d  ", mux_result);
 	printf("ALU Result= %d  ",alu_result);
 	printf("RA=%d  ", RA);
 	printf("RB=%d  ", RB);
-        printf("R0=%d  \n", R0);
-	
+        printf("R0=%d  ", R0);
+	printf("Carry: %d\n", carry_temp);
 	
 	sleep(1);
-        PC = Procount(PC, carry);
+	
+        PC = Procount(PC, carry_temp);
+	carry_temp = carry ;  
     }
 }
 
